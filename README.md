@@ -1,5 +1,7 @@
 # SafeRoute
 
+![CI](https://github.com/Db2203/saferoute/actions/workflows/ci.yml/badge.svg)
+
 Safety-aware navigation. Uses UK STATS19 accident data and a few ML models to recommend routes that trade off speed against historical risk, side-by-side with the fastest route.
 
 ## Stack
