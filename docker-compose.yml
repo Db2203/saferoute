@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: saferoute_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-saferoute}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-saferoute}
+      POSTGRES_DB: ${POSTGRES_DB:-saferoute}
+    ports:
+      - "5432:5432"
+    volumes:
+      - saferoute_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-saferoute} -d ${POSTGRES_DB:-saferoute}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  saferoute_pg:
