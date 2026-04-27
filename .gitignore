@@ -1,0 +1,51 @@
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# node
+node_modules/
+.next/
+out/
+.npm
+*.tsbuildinfo
+next-env.d.ts
+
+# data (large, regeneratable)
+data/raw/
+data/processed/
+data/cache/
+
+# trained models (regeneratable)
+backend/trained_models/*.pkl
+backend/trained_models/*.joblib
+
+# notebooks output
+*.ipynb_checkpoints/
+
+# env / secrets
+.env
+.env.local
+.env.*.local
+
+# os
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editors
+.vscode/
+.idea/
+*.swp
+*.swo
