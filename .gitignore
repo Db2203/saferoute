@@ -49,3 +49,11 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# personal notes / assistant context (not for the public repo)
+CLAUDE.md
+SafeRoute_Project_Blueprint.md
+AGENTS.md
+.claude/
+.cursorrules
+.cursor/
