@@ -1,0 +1,8 @@
+count_point_id,year,region_name,local_authority_name,road_name,road_category,road_type,easting,northing,latitude,longitude,link_length_km,all_motor_vehicles
+1001,2021,London,Westminster,A4,A,Major,529091,180371,51.507351,-0.127758,0.5,28000
+1001,2022,London,Westminster,A4,A,Major,529091,180371,51.507351,-0.127758,0.5,29500
+1001,2023,London,Westminster,A4,A,Major,529091,180371,51.507351,-0.127758,0.5,31200
+1002,2023,London,Camden,A501,A,Major,530100,182300,51.524000,-0.135000,0.7,24000
+1003,2023,London,Lambeth,B215,B,Minor,531800,178900,51.495000,-0.110000,0.3,8200
+1004,2023,London,Hackney,,Unclassified,Minor,533200,184500,51.545000,-0.060000,0.2,3200
+9999,2023,London,Bad,,,,,,,,0.0,0
