@@ -58,3 +58,12 @@ class AADTPoint(Base):
 
     link_length_km: Mapped[float | None] = mapped_column(Float)
     all_motor_vehicles: Mapped[int | None] = mapped_column(Integer)
+
+
+class Hotspot(Base):
+    __tablename__ = "hotspots"
+
+    cluster_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    centroid: Mapped[object] = mapped_column(Geometry("POINT", srid=4326), nullable=False)
+    accident_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    avg_severity_weight: Mapped[float] = mapped_column(Float, nullable=False)
