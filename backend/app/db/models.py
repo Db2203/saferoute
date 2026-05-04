@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from geoalchemy2 import Geometry
-from sqlalchemy import DateTime, Float, Integer, String
+from sqlalchemy import BigInteger, Boolean, DateTime, Float, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -67,3 +67,18 @@ class Hotspot(Base):
     centroid: Mapped[object] = mapped_column(Geometry("POINT", srid=4326), nullable=False)
     accident_count: Mapped[int] = mapped_column(Integer, nullable=False)
     avg_severity_weight: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class RoadRiskScore(Base):
+    __tablename__ = "road_risk_scores"
+
+    u: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    v: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    key: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    accident_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    severity_sum: Mapped[int] = mapped_column(Integer, nullable=False)
+    aadt: Mapped[float] = mapped_column(Float, nullable=False)
+    aadt_is_fallback: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    raw_score: Mapped[float] = mapped_column(Float, nullable=False)
+    risk_score: Mapped[float] = mapped_column(Float, nullable=False)
