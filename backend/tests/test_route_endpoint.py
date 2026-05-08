@@ -73,7 +73,8 @@ def test_returns_both_routes_and_comparison(client, monkeypatch):
     assert data["comparison"]["risk_reduction"] == 60.0
     assert data["comparison"]["risk_reduction_pct"] == pytest.approx(75.0)
     assert data["context"]["hour"] == 8
-    assert data["context"]["day_of_week"] == 6  # 2026-05-09 is a Saturday
+    # 2026-05-09 is a Saturday; STATS19 code for Saturday is 7
+    assert data["context"]["day_of_week"] == 7
     assert data["context"]["month"] == 5
     assert data["context"]["temporal_multiplier"] == 1.2
 

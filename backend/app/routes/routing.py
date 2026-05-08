@@ -148,10 +148,12 @@ def get_route(
     d = _parse_coord(dest, "dest")
     when_dt = _parse_when(when)
 
-    # Python's isoweekday() returns 1=Mon..7=Sun, matching STATS19's day_of_week.
+    # STATS19 encodes day_of_week as 1=Sun..7=Sat (verified empirically against
+    # the parquet). Python's isoweekday() is 1=Mon..7=Sun. The mapping
+    # `(iso % 7) + 1` rotates by one with wrap-around: Mon(1)→2, Sun(7)→1.
     features = {
         "hour": when_dt.hour,
-        "day_of_week": when_dt.isoweekday(),
+        "day_of_week": (when_dt.isoweekday() % 7) + 1,
         "month": when_dt.month,
         "weather_conditions": weather,
         "road_type": _DEFAULT_ROAD_TYPE,
