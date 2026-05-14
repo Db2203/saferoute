@@ -1,3 +1,16 @@
+"use client";
+
+import dynamic from "next/dynamic";
+
+const Map = dynamic(() => import("@/components/Map"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center text-zinc-400">
+      loading map…
+    </div>
+  ),
+});
+
 export default function Home() {
   return (
     <main className="grid h-screen grid-cols-[24rem_1fr] bg-zinc-50 dark:bg-zinc-950">
@@ -15,8 +28,8 @@ export default function Home() {
           comparison coming soon.
         </div>
       </aside>
-      <section className="relative flex items-center justify-center text-zinc-400">
-        map slot
+      <section className="relative">
+        <Map />
       </section>
     </main>
   );
