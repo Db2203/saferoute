@@ -12,6 +12,7 @@ from app.models.routing import (
 )
 from app.models.temporal import load_artifact
 from app.routes.hotspots import router as hotspots_router
+from app.routes.risk import router as risk_router
 from app.routes.routing import router as routing_router
 
 log = logging.getLogger("saferoute")
@@ -46,6 +47,7 @@ app.add_middleware(
 
 app.include_router(hotspots_router)
 app.include_router(routing_router)
+app.include_router(risk_router)
 
 
 @app.get("/health")
