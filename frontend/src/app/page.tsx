@@ -1,6 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useState } from "react";
+
+import RouteComparison from "@/components/RouteComparison";
+import type { RouteState } from "@/lib/api";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
@@ -12,9 +16,11 @@ const Map = dynamic(() => import("@/components/Map"), {
 });
 
 export default function Home() {
+  const [route, setRoute] = useState<RouteState | null>(null);
+
   return (
     <main className="grid h-screen grid-cols-[24rem_1fr] bg-zinc-50 dark:bg-zinc-950">
-      <aside className="flex flex-col gap-6 border-r border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <aside className="flex flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <header>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             SafeRoute
@@ -23,13 +29,10 @@ export default function Home() {
             Safety-aware navigation for London
           </p>
         </header>
-        <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
-          Pan or zoom the map to load accident hotspots in view. Route
-          comparison coming soon.
-        </div>
+        <RouteComparison onRoute={setRoute} />
       </aside>
       <section className="relative">
-        <Map />
+        <Map route={route} />
       </section>
     </main>
   );
