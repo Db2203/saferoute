@@ -19,10 +19,34 @@ export default function Home() {
   const [route, setRoute] = useState<RouteState | null>(null);
   const [showHotspots, setShowHotspots] = useState(true);
   const [hotspotError, setHotspotError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <main className="grid h-screen grid-cols-[24rem_1fr] bg-zinc-50 dark:bg-zinc-950">
-      <aside className="flex flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+    <main className="relative h-screen w-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+      {/* Map: full-screen on mobile, leaves room for the sidebar on desktop */}
+      <div className="absolute inset-0 md:left-96">
+        {hotspotError && (
+          <div className="absolute left-1/2 top-4 z-[1000] -translate-x-1/2 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 shadow-md dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+            {hotspotError}
+          </div>
+        )}
+        <Map route={route} showHotspots={showHotspots} onHotspotError={setHotspotError} />
+      </div>
+
+      {/* Backdrop behind the drawer on mobile */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="absolute inset-0 z-[1050] bg-black/30 md:hidden"
+        />
+      )}
+
+      {/* Sidebar: slide-in drawer on mobile, fixed column on desktop */}
+      <aside
+        className={`absolute inset-y-0 left-0 z-[1100] flex w-96 max-w-[85vw] flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-white p-6 transition-transform dark:border-zinc-800 dark:bg-zinc-900 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}
+      >
         <header>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             SafeRoute
@@ -42,18 +66,15 @@ export default function Home() {
           />
         </label>
       </aside>
-      <section className="relative">
-        {hotspotError && (
-          <div className="absolute left-1/2 top-4 z-[1000] -translate-x-1/2 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 shadow-md dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-            {hotspotError}
-          </div>
-        )}
-        <Map
-          route={route}
-          showHotspots={showHotspots}
-          onHotspotError={setHotspotError}
-        />
-      </section>
+
+      {/* Mobile-only toggle for the drawer */}
+      <button
+        type="button"
+        onClick={() => setSidebarOpen((open) => !open)}
+        className="absolute right-4 top-4 z-[1200] rounded-md bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-md md:hidden dark:bg-zinc-800 dark:text-zinc-100"
+      >
+        {sidebarOpen ? "Close" : "☰ Route"}
+      </button>
     </main>
   );
 }

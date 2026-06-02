@@ -24,8 +24,8 @@ interface Props {
 }
 
 export default function RouteComparison({ onRoute }: Props) {
-  const [originText, setOriginText] = useState("King's Cross");
-  const [destText, setDestText] = useState("Heathrow Airport");
+  const [originText, setOriginText] = useState("");
+  const [destText, setDestText] = useState("");
   // Coordinates locked in when the user picks a suggestion; null means
   // "they typed freely, geocode the text on submit".
   const [originPlace, setOriginPlace] = useState<GeocodeResult | null>(null);
