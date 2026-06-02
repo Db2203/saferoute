@@ -35,7 +35,13 @@ function FitToRoute({ route }: { route: RouteState | null }) {
   return null;
 }
 
-export default function Map({ route }: { route: RouteState | null }) {
+export default function Map({
+  route,
+  showHotspots,
+}: {
+  route: RouteState | null;
+  showHotspots: boolean;
+}) {
   return (
     <MapContainer
       center={LONDON_CENTER}
@@ -48,7 +54,7 @@ export default function Map({ route }: { route: RouteState | null }) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <HotspotLayer />
+      {showHotspots && <HotspotLayer />}
 
       {route && (
         <>

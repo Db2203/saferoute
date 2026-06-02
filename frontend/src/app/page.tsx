@@ -17,6 +17,7 @@ const Map = dynamic(() => import("@/components/Map"), {
 
 export default function Home() {
   const [route, setRoute] = useState<RouteState | null>(null);
+  const [showHotspots, setShowHotspots] = useState(true);
 
   return (
     <main className="grid h-screen grid-cols-[24rem_1fr] bg-zinc-50 dark:bg-zinc-950">
@@ -30,9 +31,18 @@ export default function Home() {
           </p>
         </header>
         <RouteComparison onRoute={setRoute} />
+        <label className="flex items-center justify-between rounded-md border border-zinc-200 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
+          <span>Show accident hotspots</span>
+          <input
+            type="checkbox"
+            checked={showHotspots}
+            onChange={(e) => setShowHotspots(e.target.checked)}
+            className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100"
+          />
+        </label>
       </aside>
       <section className="relative">
-        <Map route={route} />
+        <Map route={route} showHotspots={showHotspots} />
       </section>
     </main>
   );
