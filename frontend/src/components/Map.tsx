@@ -38,9 +38,11 @@ function FitToRoute({ route }: { route: RouteState | null }) {
 export default function Map({
   route,
   showHotspots,
+  onHotspotError,
 }: {
   route: RouteState | null;
   showHotspots: boolean;
+  onHotspotError?: (message: string | null) => void;
 }) {
   return (
     <MapContainer
@@ -54,7 +56,7 @@ export default function Map({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {showHotspots && <HotspotLayer />}
+      {showHotspots && <HotspotLayer onError={onHotspotError} />}
 
       {route && (
         <>

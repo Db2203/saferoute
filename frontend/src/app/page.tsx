@@ -18,6 +18,7 @@ const Map = dynamic(() => import("@/components/Map"), {
 export default function Home() {
   const [route, setRoute] = useState<RouteState | null>(null);
   const [showHotspots, setShowHotspots] = useState(true);
+  const [hotspotError, setHotspotError] = useState<string | null>(null);
 
   return (
     <main className="grid h-screen grid-cols-[24rem_1fr] bg-zinc-50 dark:bg-zinc-950">
@@ -42,7 +43,16 @@ export default function Home() {
         </label>
       </aside>
       <section className="relative">
-        <Map route={route} showHotspots={showHotspots} />
+        {hotspotError && (
+          <div className="absolute left-1/2 top-4 z-[1000] -translate-x-1/2 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 shadow-md dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+            {hotspotError}
+          </div>
+        )}
+        <Map
+          route={route}
+          showHotspots={showHotspots}
+          onHotspotError={setHotspotError}
+        />
       </section>
     </main>
   );

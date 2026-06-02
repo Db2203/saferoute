@@ -76,10 +76,14 @@ export interface RouteState {
 
 const client = axios.create({ baseURL: BASE_URL });
 
-export async function getHotspots(bounds: Bounds): Promise<HotspotsResponse> {
+export async function getHotspots(
+  bounds: Bounds,
+  signal?: AbortSignal,
+): Promise<HotspotsResponse> {
   const { south, west, north, east } = bounds;
   const res = await client.get<HotspotsResponse>("/api/hotspots", {
     params: { bounds: `${south},${west},${north},${east}` },
+    signal,
   });
   return res.data;
 }
