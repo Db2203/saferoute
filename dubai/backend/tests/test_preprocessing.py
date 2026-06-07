@@ -64,6 +64,20 @@ def test_clean_swaps_coords_and_filters():
     assert row["hour"] == 14
 
 
+def test_clean_drops_exact_duplicates_but_keeps_distinct_locations():
+    raw = pd.DataFrame(
+        {
+            "acci_id": [7, 7, 7],
+            "acci_time": ["2024-05-01 10:00:00.000"] * 3,
+            "acci_name": ["صدم عمود - بسيط"] * 3,
+            "acci_x": [25.20, 25.20, 25.25],  # rows 1&2 identical, row 3 elsewhere
+            "acci_y": [55.30, 55.30, 55.35],
+        }
+    )
+    out = clean(raw)
+    assert len(out) == 2  # one exact dup removed, distinct-location row kept
+
+
 def test_label_en():
     assert label_en("صدم دراجة نارية") == "Hit motorcycle"
     assert label_en("nonexistent type") is None

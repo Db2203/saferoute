@@ -68,7 +68,10 @@ def clean(raw: pd.DataFrame) -> pd.DataFrame:
         & in_dubai_bbox(df["lat"], df["lng"])
         & df["datetime"].notna()
     )
-    return df[keep].reset_index(drop=True)
+    # Drop exact-duplicate records (same id reported twice with identical
+    # time/coords/type/severity). Rows sharing an id but differing in location
+    # are kept — they're distinct geocoded points.
+    return df[keep].drop_duplicates().reset_index(drop=True)
 
 
 def run_pipeline(out: Path | None = None) -> pd.DataFrame:
