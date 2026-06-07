@@ -30,6 +30,8 @@ data/cache/
 # trained models (regeneratable)
 backend/trained_models/*.pkl
 backend/trained_models/*.joblib
+dubai/backend/trained_models/*.pkl
+dubai/backend/trained_models/*.joblib
 
 # notebooks output
 *.ipynb_checkpoints/
