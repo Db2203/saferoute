@@ -33,6 +33,9 @@ backend/trained_models/*.joblib
 dubai/backend/trained_models/*.pkl
 dubai/backend/trained_models/*.joblib
 
+# self-hosted basemap (regeneratable via pmtiles extract)
+dubai/frontend/public/*.pmtiles
+
 # notebooks output
 *.ipynb_checkpoints/
 
