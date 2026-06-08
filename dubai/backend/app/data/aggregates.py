@@ -130,6 +130,7 @@ def grid_blackspots(df: pd.DataFrame, cell: float = 0.002, min_count: int = 50) 
 
 def build() -> tuple[dict, dict]:
     df = pd.read_parquet(PARQUET)
+    geo = grid_blackspots(df)
     stats = {
         "summary": summary(df),
         "severe_rate_by_type": severe_rate_by_type(df),
@@ -138,7 +139,7 @@ def build() -> tuple[dict, dict]:
         "counts_by_dow": counts_by_dow(df),
         "yearly": yearly(df),
     }
-    geo = grid_blackspots(df)
+    stats["summary"]["n_blackspots"] = len(geo["features"])
     STATS_JSON.write_text(json.dumps(stats, ensure_ascii=False, indent=2), encoding="utf-8")
     BLACKSPOTS_GEOJSON.write_text(json.dumps(geo, ensure_ascii=False), encoding="utf-8")
     return stats, geo
