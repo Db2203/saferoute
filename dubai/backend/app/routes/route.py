@@ -12,6 +12,38 @@ def _parse_latlng(s: str) -> tuple[float, float]:
     return float(lat), float(lng)
 
 
+def _edge_geom_coords(graph, u, v) -> list[list[float]]:
+    """[[lng, lat], ...] tracing the actual road for edge u->v (oriented u->v).
+
+    OSMnx edges carry a `geometry` LineString following the real road curve;
+    falling back to a straight u->v line only where it's absent."""
+    data = graph.get_edge_data(u, v)
+    key = min(data, key=lambda k: data[k].get("length", 1.0))
+    geom = data[key].get("geometry")
+    if geom is not None:
+        seg = [[float(x), float(y)] for x, y in geom.coords]
+    else:
+        seg = [
+            [graph.nodes[u]["x"], graph.nodes[u]["y"]],
+            [graph.nodes[v]["x"], graph.nodes[v]["y"]],
+        ]
+    ux, uy = graph.nodes[u]["x"], graph.nodes[u]["y"]
+    if seg and abs(seg[0][0] - ux) + abs(seg[0][1] - uy) > abs(seg[-1][0] - ux) + abs(seg[-1][1] - uy):
+        seg.reverse()  # stored v->u; flip to u->v
+    return seg
+
+
+def _route_geometry(graph, path) -> list[list[float]]:
+    coords: list[list[float]] = []
+    for u, v in zip(path[:-1], path[1:]):
+        seg = _edge_geom_coords(graph, u, v)
+        if coords and seg and coords[-1] == seg[0]:
+            coords.extend(seg[1:])  # drop the shared junction point
+        else:
+            coords.extend(seg)
+    return coords
+
+
 @router.get("/route-blackspots")
 def get_route_blackspots(request: Request, origin: str, dest: str):
     graph = request.app.state.graph
@@ -32,10 +64,10 @@ def get_route_blackspots(request: Request, origin: str, dest: str):
         raise HTTPException(status_code=404, detail="no route found between those points")
 
     result = route_blackspots(path, edge_index)
-    # attach a lat/lng to each blackspot (segment midpoint) for the map
+    # place each blackspot marker on the road (midpoint of the edge geometry)
     for b in result["blackspots"]:
-        u, v = b["u"], b["v"]
-        b["lat"] = round((graph.nodes[u]["y"] + graph.nodes[v]["y"]) / 2, 6)
-        b["lng"] = round((graph.nodes[u]["x"] + graph.nodes[v]["x"]) / 2, 6)
-    result["geometry"] = [[graph.nodes[n]["x"], graph.nodes[n]["y"]] for n in path]
+        seg = _edge_geom_coords(graph, b["u"], b["v"])
+        mid = seg[len(seg) // 2]
+        b["lng"], b["lat"] = round(mid[0], 6), round(mid[1], 6)
+    result["geometry"] = _route_geometry(graph, path)
     return result
