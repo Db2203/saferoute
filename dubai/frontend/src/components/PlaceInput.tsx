@@ -24,12 +24,13 @@ export default function PlaceInput({
       justSelected.current = false;
       return;
     }
-    if (value.trim().length < 3) {
-      setSuggestions([]);
-      return;
-    }
+    const short = value.trim().length < 3;
     // debounce — respect Nominatim's ~1 req/sec fair-use limit
     const t = setTimeout(async () => {
+      if (short) {
+        setSuggestions([]);
+        return;
+      }
       try {
         const r = await searchPlaces(value);
         setSuggestions(r);
@@ -37,7 +38,7 @@ export default function PlaceInput({
       } catch {
         setSuggestions([]);
       }
-    }, 400);
+    }, short ? 0 : 400);
     return () => clearTimeout(t);
   }, [value]);
 
