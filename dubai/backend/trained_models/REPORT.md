@@ -3,29 +3,29 @@
 Binary RandomForest predicting **minor vs severe** from incident type, hour, day-of-week, month, and location.
 
 ## Headline
-- **ROC-AUC: 0.867**  ·  severe-class recall: **0.815**
-- Accuracy 0.8 (majority-class baseline 0.894) — we trade accuracy for severe recall via `class_weight='balanced'`, so accuracy is *below* baseline by design. Lead with AUC/recall.
-- Train/test: 304,226 / 76,057 (severe rate 10.6%)
+- **ROC-AUC: 0.865**  ·  severe-class recall: **0.806**
+- Accuracy 0.802 (majority-class baseline 0.893) — we trade accuracy for severe recall via `class_weight='balanced'`, so accuracy is *below* baseline by design. Lead with AUC/recall.
+- Train/test: 294,876 / 73,720 (severe rate 10.7%)
 
 ## Per-class
 | class | precision | recall | f1 |
 |---|---|---|---|
-| minor | 0.973 | 0.798 | 0.877 |
-| severe | 0.324 | 0.815 | 0.463 |
+| minor | 0.972 | 0.802 | 0.878 |
+| severe | 0.328 | 0.806 | 0.466 |
 
 ## Confusion matrix (test)
 | | pred minor | pred severe |
 |---|---|---|
-| actual minor | 54,259 | 13,734 |
-| actual severe | 1,491 | 6,573 |
+| actual minor | 52,739 | 13,061 |
+| actual severe | 1,540 | 6,380 |
 
 ## Feature importances
-- type_code: 0.731
-- lng: 0.088
-- lat: 0.081
-- hour: 0.049
+- type_code: 0.73
+- lng: 0.089
+- lat: 0.08
+- hour: 0.048
 - month: 0.029
-- day_of_week: 0.022
+- day_of_week: 0.023
 
 ## Honest framing (viva)
 - **Descriptive, not predictive-for-routing.** Incident type dominates importance, but type is unknown before a crash — so this explains *what makes crashes severe*, it does not score a future route. Geo+time alone is much weaker (AUC ~0.62).

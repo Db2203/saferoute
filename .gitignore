@@ -26,6 +26,7 @@ next-env.d.ts
 data/raw/
 data/processed/
 data/cache/
+dubai/data/
 
 # trained models (regeneratable)
 backend/trained_models/*.pkl
@@ -60,6 +61,7 @@ CLAUDE.md
 SafeRoute_Project_Blueprint.md
 AGENTS.md
 .claude/
+.json/
 .cursorrules
 .cursor/
 [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*.txt
