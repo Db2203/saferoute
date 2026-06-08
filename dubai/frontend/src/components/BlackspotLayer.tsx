@@ -21,17 +21,17 @@ export default function BlackspotLayer({ severeOnly }: { severeOnly: boolean }) 
       {shown.map((f, i) => {
         const [lng, lat] = f.geometry.coordinates;
         const metric = severeOnly ? f.properties.severe : f.properties.count;
-        const radius = Math.max(2, Math.sqrt(metric) * 0.7);
+        const radius = Math.max(4, Math.sqrt(metric) * 1.1);
         return (
           <CircleMarker
             key={`${lat}-${lng}-${i}`}
             center={[lat, lng]}
             radius={radius}
-            pathOptions={{ weight: 0, fillColor: "#dc2626", fillOpacity: 0.4 }}
+            pathOptions={{ weight: 0.5, color: "#ffffff", fillColor: "#dc2626", fillOpacity: 0.55 }}
           >
             <Tooltip>
-              {f.properties.dominant_type ?? "collisions"}: {f.properties.count} crashes
-              {" "}({f.properties.severe} severe)
+              {f.properties.dominant_type ?? "collisions"}: {f.properties.count} crashes (
+              {f.properties.severe} severe)
             </Tooltip>
           </CircleMarker>
         );
