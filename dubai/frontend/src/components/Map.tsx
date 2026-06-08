@@ -73,11 +73,20 @@ function VectorBasemap({ onError }: { onError: (failed: boolean) => void }) {
     if (typeof window !== "undefined") {
       (window as unknown as { maplibregl: typeof maplibregl }).maplibregl = maplibregl;
     }
+    // With a MapTiler key, use their polished Streets style (already
+    // English-first). Without one, fall back to the self-hosted offline PMTiles.
+    const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
+    const style = key
+      ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${key}`
+      : buildStyle();
+    const attribution = key
+      ? '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
     const gl = (
       L as unknown as {
         maplibreGL: (o: { style: unknown; attribution?: string }) => L.Layer;
       }
-    ).maplibreGL({ style: buildStyle() });
+    ).maplibreGL({ style, attribution });
     gl.addTo(map);
 
     // Graceful degradation: blackspots are a separate Leaflet layer and render
