@@ -6,7 +6,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.data.aggregates import BLACKSPOTS_GEOJSON, STATS_JSON
+import pandas as pd
+
+from app.data.aggregates import BLACKSPOTS_GEOJSON, PARQUET, STATS_JSON
 from app.models import severity_model
 from app.models.edge_blackspots import EDGE_BLACKSPOTS_JSON
 from app.models.graph import CACHE_PATH, load_dubai_graph
@@ -14,6 +16,12 @@ from app.models.graph import CACHE_PATH, load_dubai_graph
 
 def _read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def load_collisions():
+    """The full cleaned collision table (~107 MB), held in memory so the
+    analytics endpoints can filter on demand. None if the parquet is missing."""
+    return pd.read_parquet(PARQUET) if PARQUET.exists() else None
 
 
 def load_stats():

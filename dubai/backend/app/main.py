@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import artifacts
+from app.routes.analytics import router as analytics_router
 from app.routes.blackspots import router as blackspots_router
 from app.routes.route import router as route_router
 from app.routes.stats import router as stats_router
@@ -20,7 +21,12 @@ async def lifespan(app: FastAPI):
     app.state.edge_index = artifacts.load_edge_index()
     app.state.graph = artifacts.load_graph()
     app.state.severity = artifacts.load_severity()
-    log.info("startup: artifacts loaded (graph=%s)", app.state.graph is not None)
+    app.state.df = artifacts.load_collisions()
+    log.info(
+        "startup: artifacts loaded (graph=%s, collisions=%s)",
+        app.state.graph is not None,
+        None if app.state.df is None else len(app.state.df),
+    )
     yield
 
 
@@ -32,6 +38,7 @@ app.state.blackspots = None
 app.state.edge_index = None
 app.state.graph = None
 app.state.severity = None
+app.state.df = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,6 +51,7 @@ app.add_middleware(
 app.include_router(stats_router)
 app.include_router(blackspots_router)
 app.include_router(route_router)
+app.include_router(analytics_router)
 
 
 @app.get("/health")

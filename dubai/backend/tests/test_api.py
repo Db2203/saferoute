@@ -13,6 +13,7 @@ def setup_function():
     app.state.edge_index = None
     app.state.graph = None
     app.state.severity = None
+    app.state.df = None
 
 
 def test_health():
