@@ -13,12 +13,16 @@ from app.data.type_labels import label_en
 def test_decode_severity():
     assert decode_severity("اصطدام بين مركبتين - بليغ") == "severe"
     assert decode_severity("صدم جدار - بسيط") == "minor"
+    assert decode_severity("حادث اصطدام بين سيارتين- متوسط") == "moderate"
     assert decode_severity("تعطل مركبة على طريق عام") == "untagged"
 
 
 def test_incident_type_strips_severity_suffix():
     assert incident_type("اصطدام بين مركبتين - بليغ") == "اصطدام بين مركبتين"
     assert incident_type("حادث صدم عمود- بسيط") == "حادث صدم عمود"
+    # moderate suffix (with and without surrounding spaces) is stripped too
+    assert incident_type("حادث اصطدام بين سيارتين- متوسط") == "حادث اصطدام بين سيارتين"
+    assert incident_type("حادث دهس طفل-متوسط") == "حادث دهس طفل"
 
 
 def test_is_collision():
@@ -81,3 +85,12 @@ def test_clean_drops_exact_duplicates_but_keeps_distinct_locations():
 def test_label_en():
     assert label_en("صدم دراجة نارية") == "Hit motorcycle"
     assert label_en("nonexistent type") is None
+
+
+def test_label_en_merges_vocabulary_migration():
+    # the old حادث-prefixed phrasing and the new bare phrasing collapse to one
+    assert label_en("صدم عمود") == label_en("حادث صدم عمود") == "Hit pole"
+    assert label_en("اصطدام بين مركبتين") == label_en("حادث اصطدام بين سيارتين") == "Two-vehicle collision"
+    # old victim-specific pedestrian types all merge with the new generic دهس
+    for t in ("دهس", "حادث دهس رجل", "حادث دهس امراة", "حادث دهس طفل"):
+        assert label_en(t) == "Pedestrian run-over"

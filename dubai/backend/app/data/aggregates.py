@@ -72,12 +72,15 @@ def yearly(df: pd.DataFrame, year_from: int = 2019, year_to: int = 2025) -> list
 def summary(df: pd.DataFrame) -> dict:
     severe = int((df["severity"] == "severe").sum())
     minor = int((df["severity"] == "minor").sum())
+    moderate = int((df["severity"] == "moderate").sum())
+    tagged = severe + minor + moderate  # everything with a known severity
     return {
         "total": int(len(df)),
         "severe": severe,
         "minor": minor,
+        "moderate": moderate,
         "untagged": int((df["severity"] == "untagged").sum()),
-        "severe_rate_pct": round(severe / (severe + minor) * 100, 1),
+        "severe_rate_pct": round(severe / tagged * 100, 1) if tagged else None,
         "date_from": str(df["datetime"].min().date()),
         "date_to": str(df["datetime"].max().date()),
         "n_types": int(df["incident_type"].nunique()),

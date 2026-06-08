@@ -48,12 +48,15 @@ def _severe_rate(severity: pd.Series) -> float | None:
 def _summary(df: pd.DataFrame) -> dict:
     severe = int((df["severity"] == "severe").sum())
     minor = int((df["severity"] == "minor").sum())
+    moderate = int((df["severity"] == "moderate").sum())
+    tagged = severe + minor + moderate  # everything with a known severity
     out = {
         "total": int(len(df)),
         "severe": severe,
         "minor": minor,
+        "moderate": moderate,
         "untagged": int((df["severity"] == "untagged").sum()),
-        "severe_rate_pct": round(severe / (severe + minor) * 100, 1) if (severe + minor) else None,
+        "severe_rate_pct": round(severe / tagged * 100, 1) if tagged else None,
         "date_from": None,
         "date_to": None,
     }

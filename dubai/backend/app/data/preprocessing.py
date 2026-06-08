@@ -14,7 +14,12 @@ DUBAI_BBOX = (24.7, 25.5, 54.8, 55.8)
 
 SEVERE_AR = "بليغ"
 MINOR_AR = "بسيط"
-_SEV_SUFFIX = re.compile(r"\s*-\s*(بسيط|بليغ)\s*$")
+MODERATE_AR = "متوسط"
+# Dubai Police tagged severity with three words pre-2021 (minor/moderate/severe)
+# and effectively dropped "moderate" after. Strip whichever suffix is present so
+# the incident type comes out clean (the old parser only knew minor/severe and
+# left "- متوسط" stuck on ~3k types, fragmenting them).
+_SEV_SUFFIX = re.compile(r"\s*-\s*(بسيط|بليغ|متوسط)\s*$")
 
 # An incident counts as a collision if its type mentions one of these.
 COLLISION_KW = ("صدم", "اصطدام", "دهس", "حادث", "انقلاب")
@@ -29,6 +34,8 @@ def decode_severity(name: str) -> str:
         return "severe"
     if s.endswith(MINOR_AR):
         return "minor"
+    if s.endswith(MODERATE_AR):
+        return "moderate"
     return "untagged"
 
 
