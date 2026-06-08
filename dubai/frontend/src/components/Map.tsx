@@ -10,6 +10,8 @@ import { Protocol } from "pmtiles";
 import { layers, namedFlavor } from "@protomaps/basemaps";
 
 import BlackspotLayer from "./BlackspotLayer";
+import RouteLayer from "./RouteLayer";
+import { RouteResult } from "@/lib/api";
 
 const DUBAI_CENTER: [number, number] = [25.2, 55.27];
 // Self-hosted Dubai basemap (single file in public/), no tile server, no key.
@@ -111,9 +113,11 @@ function VectorBasemap({ onError }: { onError: (failed: boolean) => void }) {
 export default function Map({
   severeOnly,
   onBasemapError,
+  route,
 }: {
   severeOnly: boolean;
   onBasemapError: (failed: boolean) => void;
+  route: RouteResult | null;
 }) {
   return (
     <MapContainer
@@ -125,6 +129,7 @@ export default function Map({
     >
       <VectorBasemap onError={onBasemapError} />
       <BlackspotLayer severeOnly={severeOnly} />
+      <RouteLayer route={route} />
     </MapContainer>
   );
 }
