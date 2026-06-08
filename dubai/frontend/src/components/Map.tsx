@@ -11,7 +11,7 @@ import { layers, namedFlavor } from "@protomaps/basemaps";
 
 import BlackspotLayer from "./BlackspotLayer";
 import RouteLayer from "./RouteLayer";
-import { RouteResult } from "@/lib/api";
+import { BlackspotFeature, RouteResult } from "@/lib/api";
 
 const DUBAI_CENTER: [number, number] = [25.2, 55.27];
 // Self-hosted Dubai basemap (single file in public/), no tile server, no key.
@@ -111,11 +111,11 @@ function VectorBasemap({ onError }: { onError: (failed: boolean) => void }) {
 }
 
 export default function Map({
-  severeOnly,
+  blackspots,
   onBasemapError,
   route,
 }: {
-  severeOnly: boolean;
+  blackspots: BlackspotFeature[];
   onBasemapError: (failed: boolean) => void;
   route: RouteResult | null;
 }) {
@@ -128,7 +128,7 @@ export default function Map({
       style={{ height: "100%", width: "100%", backgroundColor: "#e5e7eb" }}
     >
       <VectorBasemap onError={onBasemapError} />
-      <BlackspotLayer severeOnly={severeOnly} />
+      <BlackspotLayer features={blackspots} />
       <RouteLayer route={route} />
     </MapContainer>
   );

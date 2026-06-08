@@ -18,8 +18,54 @@ export interface BlackspotsResponse {
   features: BlackspotFeature[];
 }
 
-export async function getBlackspots(): Promise<BlackspotsResponse> {
-  const { data } = await axios.get<BlackspotsResponse>(`${BASE_URL}/api/blackspots`);
+// Active cross-filter. Any subset may be set; an empty object = "all crashes".
+export interface Filters {
+  type?: string; // English collision-type label
+  year?: number;
+  hour?: number;
+  dow?: string; // "Mon".."Sun"
+  severity?: string; // "severe"
+}
+
+function filterParams(f: Filters): Record<string, string | number> {
+  const p: Record<string, string | number> = {};
+  if (f.type !== undefined) p.type = f.type;
+  if (f.year !== undefined) p.year = f.year;
+  if (f.hour !== undefined) p.hour = f.hour;
+  if (f.dow !== undefined) p.dow = f.dow;
+  if (f.severity !== undefined) p.severity = f.severity;
+  return p;
+}
+
+export async function getBlackspots(filters: Filters = {}): Promise<BlackspotsResponse> {
+  const { data } = await axios.get<BlackspotsResponse>(`${BASE_URL}/api/blackspots`, {
+    params: filterParams(filters),
+  });
+  return data;
+}
+
+export interface Analytics {
+  summary: {
+    total: number;
+    severe: number;
+    minor: number;
+    untagged: number;
+    severe_rate_pct: number | null;
+    date_from: string | null;
+    date_to: string | null;
+  };
+  by_type: { type_en: string; n: number; severe_rate_pct: number | null }[];
+  by_hour: { hour: number; count: number; severe_rate_pct: number | null }[];
+  by_dow: { dow: string; count: number }[];
+  by_month: { month: number; count: number }[];
+  by_year: { year: number; count: number; severe_rate_pct: number | null }[];
+  hour_dow: { hour: number; dow: string; count: number }[];
+}
+
+export async function getAnalytics(filters: Filters = {}): Promise<Analytics> {
+  const { data } = await axios.get<Analytics>(`${BASE_URL}/api/analytics`, {
+    params: filterParams(filters),
+  });
   return data;
 }
 

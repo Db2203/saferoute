@@ -1,27 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { CircleMarker, Tooltip } from "react-leaflet";
 
-import { BlackspotFeature, getBlackspots } from "@/lib/api";
+import { BlackspotFeature } from "@/lib/api";
 
-export default function BlackspotLayer({ severeOnly }: { severeOnly: boolean }) {
-  const [features, setFeatures] = useState<BlackspotFeature[]>([]);
-
-  useEffect(() => {
-    getBlackspots()
-      .then((d) => setFeatures(d.features))
-      .catch(() => console.warn("failed to load blackspots — is the backend running?"));
-  }, []);
-
-  const shown = severeOnly ? features.filter((f) => f.properties.severe > 0) : features;
-
+// Renders the (already filtered) blackspot cells handed down from the page.
+export default function BlackspotLayer({ features }: { features: BlackspotFeature[] }) {
   return (
     <>
-      {shown.map((f, i) => {
+      {features.map((f, i) => {
         const [lng, lat] = f.geometry.coordinates;
-        const metric = severeOnly ? f.properties.severe : f.properties.count;
-        const radius = Math.max(4, Math.sqrt(metric) * 1.1);
+        const radius = Math.max(4, Math.sqrt(f.properties.count) * 1.1);
         return (
           <CircleMarker
             key={`${lat}-${lng}-${i}`}
