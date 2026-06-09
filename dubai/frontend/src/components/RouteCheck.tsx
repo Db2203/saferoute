@@ -42,7 +42,7 @@ export default function RouteCheck({ onRoute }: { onRoute: (r: RouteResult | nul
   }
 
   return (
-    <div className="mt-5">
+    <div>
       <h2 className="text-sm font-semibold text-zinc-100">Check a route</h2>
       <p className="mb-2 text-[11px] text-zinc-400">blackspots you&apos;ll cross, origin → destination</p>
       <form onSubmit={check} className="flex flex-col gap-2">
@@ -89,6 +89,15 @@ export default function RouteCheck({ onRoute }: { onRoute: (r: RouteResult | nul
           <p className="mt-1 text-[11px] text-zinc-400">
             (highlighted on the map; severity-weighted exposure {result.risk_exposure.toLocaleString()})
           </p>
+          <button
+            onClick={() => {
+              setResult(null);
+              onRoute(null);
+            }}
+            className="mt-2 text-[11px] text-zinc-400 underline hover:text-zinc-200"
+          >
+            clear route
+          </button>
         </div>
       )}
     </div>

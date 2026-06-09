@@ -21,8 +21,10 @@ const Map = dynamic(() => import("@/components/Map"), { ssr: false });
 
 export default function Home() {
   const [filters, setFilters] = useState<Filters>({});
+  const [severeOnly, setSevereOnly] = useState(false);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [blackspots, setBlackspots] = useState<BlackspotFeature[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [route, setRoute] = useState<RouteResult | null>(null);
   const [routeOpen, setRouteOpen] = useState(false);
@@ -30,18 +32,28 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getAnalytics(filters), getBlackspots(filters)])
+    // intentional: show the refetch indicator while filters change
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
+    // "Severe only" narrows the MAP to where severe crashes cluster; it is NOT
+    // pushed into the analytics breakdowns (a severity pre-filter would force
+    // every severe-rate panel to 100% and destroy the decomposition).
+    const mapFilters = severeOnly ? { ...filters, severity: "severe" } : filters;
+    Promise.all([getAnalytics(filters), getBlackspots(mapFilters)])
       .then(([a, b]) => {
         if (cancelled) return;
         setAnalytics(a);
         setBlackspots(b.features);
         setError(false);
       })
-      .catch(() => !cancelled && setError(true));
+      .catch(() => !cancelled && setError(true))
+      .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [filters]);
+  }, [filters, severeOnly]);
+
+  const empty = analytics !== null && analytics.summary.total === 0;
 
   // click a value to filter by it; click the active value again to clear it
   const toggle = (key: keyof Filters, value: string | number) =>
@@ -69,14 +81,14 @@ export default function Home() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-xs text-zinc-300">
+          <label className="flex items-center gap-2 text-xs text-zinc-300" title="Highlights where severe crashes cluster on the map">
             <input
               type="checkbox"
-              checked={filters.severity === "severe"}
-              onChange={() => toggle("severity", "severe")}
+              checked={severeOnly}
+              onChange={() => setSevereOnly((o) => !o)}
               className="accent-red-500"
             />
-            Severe only
+            Severe only (map)
           </label>
           <button
             onClick={() => setRouteOpen((o) => !o)}
@@ -98,10 +110,25 @@ export default function Home() {
       )}
 
       <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        {analytics && <KpiStrip a={analytics} nBlackspots={blackspots.length} />}
-        <FilterChips filters={filters} onClear={clearKey} onClearAll={() => setFilters({})} />
+        {analytics ? (
+          <KpiStrip a={analytics} nBlackspots={blackspots.length} />
+        ) : (
+          <div className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-4 text-center text-xs text-zinc-500">
+            {error ? "Backend unavailable." : "Loading analytics…"}
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <FilterChips filters={filters} onClear={clearKey} onClearAll={() => setFilters({})} />
+          {loading && <span className="text-[11px] text-zinc-500">Updating…</span>}
+          {empty && !loading && (
+            <span className="text-[11px] text-amber-400">No collisions match this filter</span>
+          )}
+        </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
+        <div
+          className="flex min-h-0 flex-1 flex-col gap-2 transition-opacity"
+          style={{ opacity: loading ? 0.6 : 1 }}
+        >
           {/* top: map + the headline "what's dangerous" chart */}
           <div className="flex min-h-0 flex-[1.4] gap-2">
             <Panel

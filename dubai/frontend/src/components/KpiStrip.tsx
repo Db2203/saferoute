@@ -13,10 +13,14 @@ function Kpi({ value, label, accent }: { value: string; label: string; accent?: 
 
 export default function KpiStrip({ a, nBlackspots }: { a: Analytics; nBlackspots: number }) {
   const s = a.summary;
-  const busiest = a.by_hour.reduce((b, h) => (h.count > b.count ? h : b), a.by_hour[0]);
+  const hasData = s.total > 0;
+  // busiest hour only meaningful if some hour actually has crashes
+  const busiest = hasData ? a.by_hour.reduce((b, h) => (h.count > b.count ? h : b), a.by_hour[0]) : null;
   const deadliest = a.by_type[0]; // by_type is sorted by severe-rate desc
   const span =
     s.date_from && s.date_to ? `${s.date_from.slice(0, 4)}–${s.date_to.slice(0, 4)}` : "—";
+  const deadliestVal =
+    deadliest && deadliest.severe_rate_pct !== null ? `${deadliest.severe_rate_pct}%` : "—";
 
   return (
     <div className="flex gap-2">
@@ -29,7 +33,7 @@ export default function KpiStrip({ a, nBlackspots }: { a: Analytics; nBlackspots
       <Kpi value={nBlackspots.toLocaleString()} label="blackspots shown" />
       <Kpi value={busiest ? `${busiest.hour}:00` : "—"} label="busiest hour" />
       <Kpi
-        value={deadliest ? `${deadliest.severe_rate_pct ?? "—"}%` : "—"}
+        value={deadliestVal}
         label={deadliest ? `deadliest: ${deadliest.type_en}` : "deadliest type"}
         accent="text-orange-400"
       />

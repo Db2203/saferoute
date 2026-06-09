@@ -49,6 +49,7 @@ export interface Analytics {
     total: number;
     severe: number;
     minor: number;
+    moderate: number;
     untagged: number;
     severe_rate_pct: number | null;
     date_from: string | null;

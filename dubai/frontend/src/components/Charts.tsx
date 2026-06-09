@@ -38,7 +38,8 @@ const TOOLTIP = {
 
 // recharts passes a state object on click; we only need activeLabel.
 type ChartClick = { activeLabel?: string | number };
-const labelOf = (s: unknown) => (s as ChartClick).activeLabel;
+const labelOf = (s: unknown) =>
+  s && typeof s === "object" ? (s as ChartClick).activeLabel : undefined;
 
 const SELECTED = "#3b82f6"; // a clicked bar highlights blue
 const num = (n: number) => n.toLocaleString();
@@ -52,7 +53,7 @@ export function TypeBars({
   active?: string;
   onSelect: (type: string) => void;
 }) {
-  const rows = data.slice(0, 10);
+  const rows = data; // backend already caps the list; show all, panel scrolls
   return (
     <ResponsiveContainer width="100%" height={Math.max(200, rows.length * 24)}>
       <BarChart
@@ -61,7 +62,7 @@ export function TypeBars({
         margin={{ left: 8, right: 34 }}
         onClick={(s) => { const l = labelOf(s); if (l != null) onSelect(String(l)); }}
       >
-        <XAxis type="number" domain={[0, 60]} tick={AXIS_TICK} unit="%" stroke="#3f3f46" />
+        <XAxis type="number" domain={[0, 100]} tick={AXIS_TICK} unit="%" stroke="#3f3f46" />
         <YAxis type="category" dataKey="type_en" width={118} tick={AXIS_TICK} interval={0} stroke="#3f3f46" />
         <Tooltip {...TOOLTIP} formatter={(v) => [`${v}% severe`, ""]} labelFormatter={(l) => String(l)} cursor={{ fill: "#27272a" }} />
         <Bar dataKey="severe_rate_pct" radius={[0, 3, 3, 0]} className="cursor-pointer" label={{ position: "right", fontSize: 10, fill: "#d4d4d8", formatter: (v) => `${v}%` }}>
