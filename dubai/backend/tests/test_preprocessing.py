@@ -29,6 +29,8 @@ def test_is_collision():
     assert is_collision("اصطدام بين مركبتين")
     assert is_collision("صدم جدار")
     assert is_collision("دهس")
+    assert is_collision("تدهور دراجة نارية")  # bare rollover (no حادث prefix)
+    assert is_collision("حريق مركبة أثناء سيرها")  # vehicle fire
     assert not is_collision("تعطل مركبة على طريق عام")  # breakdown
     assert not is_collision("الوقوف خلف المركبات (دبل بارك)")  # double-parking
 
@@ -94,3 +96,5 @@ def test_label_en_merges_vocabulary_migration():
     # old victim-specific pedestrian types all merge with the new generic دهس
     for t in ("دهس", "حادث دهس رجل", "حادث دهس امراة", "حادث دهس طفل"):
         assert label_en(t) == "Pedestrian run-over"
+    # bare new-era rollovers map alongside the old حادث-prefixed ones
+    assert label_en("تدهور دراجة نارية") == label_en("حادث تدهور مركبة خفيفة") == "Vehicle rollover"

@@ -125,3 +125,20 @@ def test_blackspots_recomputes_when_filtered():
     r = client.get("/api/blackspots?type=Pedestrian run-over")
     assert r.status_code == 200
     assert len(r.json()["features"]) > 0
+
+
+def test_blackspots_sparse_filter_returns_empty_not_500():
+    # a filter where no grid cell reaches min_count must not crash (regression:
+    # empty agg used to reindex to NaN -> "cannot convert float NaN to integer")
+    app.state.df = _df()
+    app.state.blackspots = {"type": "FeatureCollection", "features": []}
+    # Two-vehicle rows are scattered 2-per-cell (< min_count 3)
+    r = client.get("/api/blackspots?type=Two-vehicle collision")
+    assert r.status_code == 200
+    assert r.json()["features"] == []
+
+
+def test_analytics_invalid_severity_and_type_422():
+    app.state.df = _df()
+    assert client.get("/api/analytics?severity=garbage").status_code == 422
+    assert client.get("/api/analytics?type=NotARealType").status_code == 422

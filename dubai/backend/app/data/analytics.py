@@ -13,19 +13,31 @@ import pandas as pd
 from app.data.aggregates import DOW, _tagged, grid_blackspots
 
 FILTER_KEYS = ("type", "year", "hour", "dow", "severity")
+VALID_SEVERITY = {"minor", "moderate", "severe", "untagged"}
 
 
 def dow_index(dow) -> int:
-    """Accept a weekday name ('Mon'..'Sun') or an int 0-6; raise on anything else."""
+    """Accept a weekday name ('Mon'..'Sun') or an int 0-6; raise a clean error
+    on anything else (so the API returns 422 with a readable message, not a raw
+    'invalid literal for int()')."""
     if isinstance(dow, str) and dow in DOW:
         return DOW.index(dow)
-    i = int(dow)
+    try:
+        i = int(dow)
+    except (TypeError, ValueError):
+        raise ValueError(f"bad day-of-week: {dow!r} (use Mon..Sun)")
     if 0 <= i <= 6:
         return i
-    raise ValueError(f"bad day-of-week: {dow!r}")
+    raise ValueError(f"bad day-of-week: {dow!r} (use Mon..Sun)")
 
 
 def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
+    if filters.get("severity") is not None and filters["severity"] not in VALID_SEVERITY:
+        raise ValueError(f"bad severity: {filters['severity']!r} (use {sorted(VALID_SEVERITY)})")
+    if filters.get("type") is not None and filters["type"] not in set(
+        df["incident_type_en"].dropna().unique()
+    ):
+        raise ValueError(f"unknown collision type: {filters['type']!r}")
     m = pd.Series(True, index=df.index)
     if filters.get("type") is not None:
         m &= df["incident_type_en"] == filters["type"]
@@ -66,7 +78,7 @@ def _summary(df: pd.DataFrame) -> dict:
     return out
 
 
-def _by_type(df: pd.DataFrame, min_n: int = 30, top: int = 15) -> list[dict]:
+def _by_type(df: pd.DataFrame, min_n: int = 30, top: int = 30) -> list[dict]:
     """Mapped types only, sorted by severe-rate (the 'what's dangerous' view).
     min_n keeps the rate stable; if a heavy filter leaves nothing above it,
     fall back to whatever is present so the panel never goes blank."""
@@ -139,8 +151,8 @@ def compute(df: pd.DataFrame, filters: dict | None = None) -> dict:
 def filtered_grid(df: pd.DataFrame, filters: dict, max_cells: int = 400) -> dict:
     """Recompute the blackspot grid over a filtered subset, capped to the worst
     cells so the map stays readable (filtered counts are far lower than the
-    precomputed >=50 threshold, so we take the top cells by weight instead)."""
+    precomputed >=50 threshold, so we take the top cells by count instead).
+    grid_blackspots caps before the expensive dominant-type pass and returns an
+    empty FeatureCollection if the slice has no qualifying cell."""
     sub = apply_filters(df, filters)
-    geo = grid_blackspots(sub, min_count=3)
-    geo["features"] = geo["features"][:max_cells]
-    return geo
+    return grid_blackspots(sub, min_count=3, max_cells=max_cells)

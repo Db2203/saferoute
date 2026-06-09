@@ -27,8 +27,8 @@ def _df():
 
 
 def test_severe_rate_by_type_sorted():
-    rows = severe_rate_by_type(_df(), min_n=1)
-    assert [r["type_ar"] for r in rows] == ["B", "A"]  # B 66.7% before A 33.3%
+    rows = severe_rate_by_type(_df(), min_n=1)  # grouped by English label
+    assert [r["type_en"] for r in rows] == ["Btype", "Atype"]  # B 66.7% before A 33.3%
     assert rows[0]["severe_rate_pct"] == 66.7
     assert rows[1]["severe_rate_pct"] == 33.3
 

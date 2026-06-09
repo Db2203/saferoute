@@ -21,15 +21,16 @@ def _tagged(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def severe_rate_by_type(df: pd.DataFrame, min_n: int = 2000) -> list[dict]:
+    # group by the merged English label (the canonical category), matching the
+    # live /api/analytics view — grouping by raw Arabic type would split each
+    # category into its pre/post-2021 vocabulary halves.
     out = []
-    for typ, sub in _tagged(df).groupby("incident_type"):
+    for en, sub in _tagged(df).dropna(subset=["incident_type_en"]).groupby("incident_type_en"):
         if len(sub) < min_n:
             continue
-        en = sub["incident_type_en"].dropna()
         out.append(
             {
-                "type_ar": typ,
-                "type_en": en.iat[0] if not en.empty else None,
+                "type_en": en,
                 "n": int(len(sub)),
                 "severe_rate_pct": round((sub["severity"] == "severe").mean() * 100, 1),
             }
@@ -83,16 +84,19 @@ def summary(df: pd.DataFrame) -> dict:
         "severe_rate_pct": round(severe / tagged * 100, 1) if tagged else None,
         "date_from": str(df["datetime"].min().date()),
         "date_to": str(df["datetime"].max().date()),
-        "n_types": int(df["incident_type"].nunique()),
+        "n_types": int(df["incident_type_en"].nunique()),
     }
 
 
-def grid_blackspots(df: pd.DataFrame, cell: float = 0.002, min_count: int = 50) -> dict:
+def grid_blackspots(
+    df: pd.DataFrame, cell: float = 0.002, min_count: int = 50, max_cells: int | None = None
+) -> dict:
     """Aggregate collisions into ~220m grid cells -> GeoJSON points.
 
     min_count=50 keeps genuine blackspots (~2,000 cells holding ~half of all
     collisions) rather than the long tail of low-count cells — performant to
-    render and a meaningful "worst spots" set.
+    render and a meaningful "worst spots" set. `max_cells` caps to the worst
+    cells (used by the filtered map path, where counts are far lower).
     """
     g = df.copy()
     g["clat"] = (g["lat"] / cell).round() * cell
@@ -104,12 +108,19 @@ def grid_blackspots(df: pd.DataFrame, cell: float = 0.002, min_count: int = 50) 
         lng=("lng", "mean"),
     )
     agg = agg[agg["count"] >= min_count].copy()
+    if agg.empty:  # a sparse filter can leave no qualifying cell
+        return {"type": "FeatureCollection", "features": []}
+    if max_cells is not None:
+        agg = agg.sort_values("count", ascending=False).head(max_cells)
+    # dominant type only for the surviving cells (cheap; avoids scanning all)
+    cells = g.set_index(["clat", "clng"]).index.isin(agg.index)
     dom = (
-        g.dropna(subset=["incident_type_en"])
+        g[cells]
+        .dropna(subset=["incident_type_en"])
         .groupby(["clat", "clng"])["incident_type_en"]
         .agg(lambda s: s.value_counts().idxmax())
     )
-    agg["dominant_type"] = dom
+    agg["dominant_type"] = dom.reindex(agg.index)
 
     features = [
         {

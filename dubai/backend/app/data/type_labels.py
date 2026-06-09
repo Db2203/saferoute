@@ -65,7 +65,8 @@ TYPE_LABELS_EN = {
     # hit-and-run (vehicle)
     "الصدم والهروب": "Hit-and-run",
     "حادث صدم و هروب": "Hit-and-run",
-    # single-vehicle rollover / overturn (تدهور), old era + the bare انقلاب
+    # single-vehicle rollover / overturn (تدهور). Old era used the حادث prefix;
+    # the bare new-era forms carry no other collision keyword (see COLLISION_KW).
     "انقلاب": "Vehicle rollover",
     "حادث تدهور مركبة خفيفة": "Vehicle rollover",
     "حادث تدهور مركبة ثقيلة": "Vehicle rollover",
@@ -73,8 +74,16 @@ TYPE_LABELS_EN = {
     "حادث تدهور باص عمال او موظفين": "Vehicle rollover",
     "حادث تدهور باص مدرسة": "Vehicle rollover",
     "حادث تدهور صهريج لمواد قابلة للاشتعال": "Vehicle rollover",
-    # vehicle fire
+    "تدهور دراجة نارية": "Vehicle rollover",
+    "تدهور مركبة خفيفة": "Vehicle rollover",
+    "تدهور مركبة ثقيلة": "Vehicle rollover",
+    "تدهور دراجة هوائية": "Vehicle rollover",
+    "تدهور حافلة عمال أو موظفين": "Vehicle rollover",
+    "تدهور حافلة مدرسية": "Vehicle rollover",
+    "تدهور صهريج لمواد قابلة للاشتعال": "Vehicle rollover",
+    # vehicle fire (old حادث-prefixed + bare new-era form)
     "حادث حريق في مركبة": "Vehicle fire",
+    "حريق مركبة أثناء سيرها": "Vehicle fire",
     # rail
     "حادث صدم ترام": "Hit train/tram",
     "صدم ترام": "Hit train/tram",

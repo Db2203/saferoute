@@ -21,8 +21,12 @@ MODERATE_AR = "متوسط"
 # left "- متوسط" stuck on ~3k types, fragmenting them).
 _SEV_SUFFIX = re.compile(r"\s*-\s*(بسيط|بليغ|متوسط)\s*$")
 
-# An incident counts as a collision if its type mentions one of these.
-COLLISION_KW = ("صدم", "اصطدام", "دهس", "حادث", "انقلاب")
+# An incident counts as a collision if its type mentions one of these verbs.
+# NOTE: rollovers are "تدهور" in this data ("انقلاب" never appears); the bare
+# new-era forms (تدهور دراجة نارية, …) carry no other keyword, so without
+# "تدهور" here ~15k rollovers/fires — many severe — were silently dropped.
+# "حريق" keeps vehicle fires (the old-era حادث حريق… is already a category).
+COLLISION_KW = ("صدم", "اصطدام", "دهس", "حادث", "تدهور", "حريق")
 _COLLISION_RE = re.compile("|".join(COLLISION_KW))
 
 PROCESSED = DUBAI_ROOT / "data" / "processed" / "collisions.parquet"
