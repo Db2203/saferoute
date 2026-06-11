@@ -83,20 +83,21 @@ Dubai Pulse CSV ─► preprocess ─► collisions.parquet
 ```bash
 # one-time pipeline (needs data/raw/dp_traffic_incidents.csv)
 python -m app.data.preprocessing        # -> collisions.parquet
+python -m scripts.filter_to_roads       # drop collisions >150m from any road
 python -m app.data.aggregates           # -> stats.json, blackspots.geojson
 python -m scripts.train_severity        # -> trained_models/severity_model.pkl
 python -m scripts.build_graph           # -> data/cache/dubai_graph.pkl (downloads OSM)
 python -m scripts.build_edge_blackspots # -> edge_blackspots.json
 
-uvicorn app.main:app --port 8000
-pytest                                  # 31 tests
+uvicorn app.main:app --port 8001        # 8001 so it runs alongside the London app (8000)
+pytest                                  # 46 tests
 ```
 
 **Frontend** (from `dubai/frontend`):
 
 ```bash
 npm install
-npm run dev    # http://localhost:3000  (expects backend on :8000)
+npm run dev    # http://localhost:3001  (expects backend on :8001; see .env.example)
 ```
 
 ## Limitations / future work
