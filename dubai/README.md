@@ -16,20 +16,21 @@ route.
 
 ## Features
 
-- **Blackspot map** — 2,017 accident blackspots over Dubai (toggle all / severe-only).
-- **"What's dangerous"** — severe-rate by collision type (pedestrian 52% / motorcycle 47% → hitting a wall <1%).
-- **"When"** — severe-rate by hour (late-night crashes are ~40% more likely to be severe) and the yearly trend (severe rate rose 6.9% → 14.9% since 2019).
-- **Route check** — enter origin → destination; it draws the route and lists the blackspots it crosses.
+- **Blackspot map** — 2,113 accident blackspots over Dubai (toggle all / severe-only; the severe view surfaces *different* spots — only 14 of the top-50 busiest cells are also top-50 by severe crashes).
+- **"What's dangerous"** — severe-rate by collision type (pedestrian 46% / motorcycle 44% / rollover 43% → hitting a wall <1%).
+- **"When"** — collisions by hour, an hour × day-of-week heatmap, monthly seasonality, and the yearly severe-rate trend (rose ~7% → 15% since 2019).
+- **Cross-filtered** — click any type, hour, day, or year and every panel plus the map re-filter together.
+- **Route check** — enter origin → destination; it draws the route along the actual roads and lists the blackspots it crosses.
 
 ## Key numbers
 
 | | |
 |---|---|
-| Raw incidents | 720,155 (2018 – 2026) |
-| Usable collisions (cleaned) | 383,359 |
-| Severe share | ~11% |
-| Severity model | RandomForest, **ROC-AUC 0.867**, severe-recall 0.82 |
-| Blackspots | 2,017 cells ≈ **50% of all collisions**; top 1% of road segments = 19% of crashes |
+| Raw incidents | 720,155 (Aug 2018 – Feb 2026) |
+| Usable collisions (cleaned) | 386,796 |
+| Severe share | ~12% |
+| Severity model | RandomForest, **ROC-AUC 0.869**, severe-recall 0.83 |
+| Blackspots | 2,113 cells ≈ **half of all collisions**; top 1% of road segments = 19% of crashes |
 
 ## The data
 
@@ -38,10 +39,12 @@ open data). Per-incident rows: id, timestamp, an **Arabic** description, and
 coordinates. Notable quirks handled in the pipeline:
 
 - The coordinate columns are **mislabeled** — `acci_x` is latitude, `acci_y` is longitude.
-- **Type and severity live inside the Arabic description** (`… - بسيط` = minor / `… - بليغ` = severe), parsed out as a controlled vocabulary (145 collision types) + a binary severity.
-- Filtered to actual collisions inside the Dubai bbox with valid timestamps; exact-duplicate records dropped.
+- **Type and severity live inside the Arabic description** (`… - بسيط` minor / `… - متوسط` moderate / `… - بليغ` severe), parsed out as a controlled vocabulary + a **3-level** severity.
+- The controlled vocabulary **changed around 2021** (older phrasing carries a حادث "accident" prefix and says "car"; newer drops it and says "vehicle"). The pipeline merges the old/new names so each collision type is one category spanning 2018–2026 — **~22 canonical types**.
+- Rollovers are coded **`تدهور`**, not `انقلاب` (which never appears); catching this recovered **~15k collisions (incl. ~6.6k severe)** that a naive keyword filter silently dropped.
+- Filtered to actual collisions **within 150 m of a road** inside the Dubai bbox with valid timestamps; exact-duplicate records dropped.
 
-The snapshot is frozen for reproducibility (data as of 2026-06-01).
+The snapshot is frozen for reproducibility (data as of 2026-06-01; spans Aug 2018 – Feb 2026).
 
 ## Methodology (and why)
 
@@ -49,9 +52,13 @@ The snapshot is frozen for reproducibility (data as of 2026-06-01).
   was tested but chains Dubai's dense core into one giant cluster; a grid is robust and
   explainable.)
 - **Severity model:** binary minor/severe RandomForest on incident type + hour + day +
-  month + location, `class_weight="balanced"`. It's **descriptive** — incident type is
-  the dominant predictor, and we lead with AUC / severe-recall, not raw accuracy (a lazy
-  "always-minor" model scores 89% and is useless).
+  month + location, `class_weight="balanced"`, **ROC-AUC 0.869**. It's **descriptive, not
+  a live predictor**: incident type dominates (~74% of importance) and is only known
+  *after* a crash. Strip it out and predict from only what you'd know beforehand
+  (location + time) and it collapses to **AUC ~0.62** — barely better than chance. So
+  severe crashes aren't predictable in advance, which is *why* this is intelligence
+  rather than prediction. (We lead with AUC / severe-recall, not raw accuracy — a lazy
+  "always-minor" model scores 89% and is useless.)
 - **Route check:** the route is computed on an OpenStreetMap graph (OSMnx); collisions
   are snapped to road edges (direction-agnostic), and the route's blackspot crossings
   are returned. No traffic-volume normalisation exists for Dubai, so road risk is
@@ -60,17 +67,17 @@ The snapshot is frozen for reproducibility (data as of 2026-06-01).
 ## Architecture
 
 ```
-Dubai Pulse CSV ─► preprocess ─► collisions.parquet
+Dubai Pulse CSV ─► preprocess ─► road-proximity filter ─► collisions.parquet
                                    ├─► aggregates  ─► stats.json, blackspots.geojson
                                    ├─► severity model ─► severity_model.pkl
                                    └─► OSM graph + snap ─► dubai_graph.pkl, edge_blackspots.json
                                                               │
-        FastAPI  (/api/stats, /api/blackspots, /api/route-blackspots)  ◄┘
+        FastAPI  (/api/analytics, /api/blackspots, /api/route-blackspots)  ◄┘
                                    │
         Next.js + Leaflet + MapLibre + recharts  (map, dashboard, route check)
 ```
 
-- **Backend:** FastAPI, DB-light (serves precomputed artifacts loaded at startup).
+- **Backend:** FastAPI, DB-light — precomputed artifacts *and* the full collision table held in memory at startup, so the dashboard filters on the fly (~35 ms/query) with no database.
 - **Frontend:** Next.js (App Router) + Leaflet + MapLibre GL (vector basemap) + recharts.
 - **Basemap:** MapTiler Streets when a key is set, else a **self-hosted offline Protomaps
   PMTiles** file — no tile server, no key (see `frontend/README.md` to regenerate).
